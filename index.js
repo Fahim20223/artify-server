@@ -75,7 +75,11 @@ async function run() {
 
     //Featured-Artworks
     app.get("/featured-artworks", async (req, res) => {
-      const result = await artsCollection.find().sort({}).limit(6).toArray();
+      const result = await artsCollection
+        .find()
+        .sort({ createdAt: "desc" })
+        .limit(6)
+        .toArray();
       res.send(result);
     });
 
