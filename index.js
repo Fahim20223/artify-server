@@ -42,7 +42,10 @@ async function run() {
     app.post("/artworks", async (req, res) => {
       const newArt = req.body;
       const result = await artsCollection.insertOne(newArt);
-      res.send(result);
+      res.send({
+        success: true,
+        result,
+      });
     });
 
     //specific card details
@@ -57,7 +60,7 @@ async function run() {
     });
 
     //update
-    app.put("/artworks", async (req, res) => {
+    app.put("/artworks/:id", async (req, res) => {
       const id = req.params.id;
       const data = req.body;
       const query = { _id: new ObjectId(id) };
@@ -82,6 +85,22 @@ async function run() {
         .find()
         .sort({ createdAt: "desc" })
         .limit(6)
+        .toArray();
+      res.send(result);
+    });
+
+    //my-galleries
+    app.get("/my-galleries", async (req, res) => {
+      const email = req.query.email;
+
+      const result = await artsCollection.find({ userEmail: email }).toArray();
+      res.send(result);
+    });
+
+    //explore-artworks
+    app.get("/explore-artworks", async (req, res) => {
+      const result = await artsCollection
+        .find({ visibility: "Public" })
         .toArray();
       res.send(result);
     });
