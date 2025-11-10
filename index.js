@@ -46,15 +46,18 @@ async function run() {
     });
 
     //specific card details
-    app.get("/artworks", async (req, res) => {
+    app.get("/artworks/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await artsCollection.findOne(query);
-      res.send(result);
+      res.send({
+        success: true,
+        result,
+      });
     });
 
     //update
-    app.put("/artworks/:id", async (req, res) => {
+    app.put("/artworks", async (req, res) => {
       const id = req.params.id;
       const data = req.body;
       const query = { _id: new ObjectId(id) };
