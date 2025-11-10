@@ -2,7 +2,7 @@ const express = require("express");
 const app = express();
 const cors = require("cors");
 const port = process.env.PORT || 3000;
-const { MongoClient, ServerApiVersion } = require("mongodb");
+const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 app.get("/", (req, res) => {
   res.send("Hello world");
 });
@@ -42,6 +42,40 @@ async function run() {
     app.post("/artworks", async (req, res) => {
       const newArt = req.body;
       const result = await artsCollection.insertOne(newArt);
+      res.send(result);
+    });
+
+    //specific card details
+    app.get("/artworks", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await artsCollection.findOne(query);
+      res.send(result);
+    });
+
+    //update
+    app.put("/artworks/:id", async (req, res) => {
+      const id = req.params.id;
+      const data = req.body;
+      const query = { _id: new ObjectId(id) };
+      const update = {
+        $set: data,
+      };
+      const result = await artsCollection.updateOne(query, update);
+      res.send(result);
+    });
+
+    //Delete
+    app.delete("/artworks/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await artsCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    //Featured-Artworks
+    app.get("/featured-artworks", async (req, res) => {
+      const result = await artsCollection.find().sort({}).limit(6).toArray();
       res.send(result);
     });
 
