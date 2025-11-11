@@ -96,11 +96,10 @@ async function run() {
       const result = await artsCollection.find({ userEmail: email }).toArray();
       res.send(result);
     });
-
-    //explore-artworks
-    app.get("/explore-artworks", async (req, res) => {
+    //public artworks
+    app.get("/public-artworks", async (req, res) => {
       const result = await artsCollection
-        .find({ visibility: "Public" })
+        .find({ visibility: "public" })
         .toArray();
       res.send(result);
     });
