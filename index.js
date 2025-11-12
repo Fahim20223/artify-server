@@ -30,6 +30,7 @@ async function run() {
 
     const db = client.db("art-db");
     const artsCollection = db.collection("arts");
+    const favoritesCollection = db.collection("favorites");
 
     //get
     app.get("/artworks", async (req, res) => {
@@ -59,6 +60,38 @@ async function run() {
       });
     });
 
+    // app.get("/artworks/:id", async (req, res) => {
+    //   const id = req.params.id;
+    //   const query = { _id: new ObjectId(id) };
+
+    //   try {
+    //     // 1️⃣ Get the main artwork
+    //     const artwork = await artsCollection.findOne(query);
+
+    //     if (!artwork) {
+    //       return res
+    //         .status(404)
+    //         .send({ success: false, message: "Artwork not found" });
+    //     }
+
+    //     // 2️⃣ Count how many artworks the same artist has
+    //     let totalArtworks = 0;
+    //     if (artwork.userEmail) {
+    //       totalArtworks = await artsCollection.countDocuments({
+    //         userEmail: artwork.userEmail,
+    //       });
+    //     }
+
+    //     // 3️⃣ Return artwork + totalArtworks
+    //     res.send({
+    //       success: true,
+    //       result: { ...artwork, totalArtworks },
+    //     });
+    //   } catch (error) {
+    //     res.status(500).send({ success: false, message: error.message });
+    //   }
+    // });
+
     //update
     app.put("/artworks/:id", async (req, res) => {
       const id = req.params.id;
@@ -76,16 +109,25 @@ async function run() {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
       const result = await artsCollection.deleteOne(query);
-      res.send(result);
+      res.send({
+        success: true,
+        result,
+      });
     });
 
     //Featured-Artworks
     app.get("/featured-artworks", async (req, res) => {
       const result = await artsCollection
-        .find()
+        .find({ visibility: "public" })
         .sort({ createdAt: "desc" })
         .limit(6)
         .toArray();
+      res.send(result);
+    });
+
+    //best-artist
+    app.get("/best-artists", async (req, res) => {
+      const result = await artsCollection.find().limit(3).toArray();
       res.send(result);
     });
 
@@ -100,6 +142,40 @@ async function run() {
     app.get("/public-artworks", async (req, res) => {
       const result = await artsCollection
         .find({ visibility: "public" })
+        .toArray();
+      res.send(result);
+    });
+
+    //favorites
+    app.post("/favorites/:id", async (req, res) => {
+      const data = req.body;
+
+      const result = await favoritesCollection.insertOne(data);
+      res.send(result);
+    });
+
+    //get favorites
+    app.get("/my-favorites", async (req, res) => {
+      const email = req.query.email;
+
+      const result = await favoritesCollection
+        .find({ userEmail: email })
+        .toArray();
+      res.send(result);
+    });
+
+    app.delete("/my-favorites/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await favoritesCollection.deleteOne(query);
+      res.send(result);
+    });
+
+    //search
+    app.get("/search", async (req, res) => {
+      const search_text = req.query.search;
+      const result = await artsCollection
+        .find({ title: { $regex: search_text, $options: "i" } })
         .toArray();
       res.send(result);
     });
