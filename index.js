@@ -60,38 +60,6 @@ async function run() {
       });
     });
 
-    // app.get("/artworks/:id", async (req, res) => {
-    //   const id = req.params.id;
-    //   const query = { _id: new ObjectId(id) };
-
-    //   try {
-    //     // 1️⃣ Get the main artwork
-    //     const artwork = await artsCollection.findOne(query);
-
-    //     if (!artwork) {
-    //       return res
-    //         .status(404)
-    //         .send({ success: false, message: "Artwork not found" });
-    //     }
-
-    //     // 2️⃣ Count how many artworks the same artist has
-    //     let totalArtworks = 0;
-    //     if (artwork.userEmail) {
-    //       totalArtworks = await artsCollection.countDocuments({
-    //         userEmail: artwork.userEmail,
-    //       });
-    //     }
-
-    //     // 3️⃣ Return artwork + totalArtworks
-    //     res.send({
-    //       success: true,
-    //       result: { ...artwork, totalArtworks },
-    //     });
-    //   } catch (error) {
-    //     res.status(500).send({ success: false, message: error.message });
-    //   }
-    // });
-
     //update
     app.put("/artworks/:id", async (req, res) => {
       const id = req.params.id;
@@ -131,6 +99,16 @@ async function run() {
       res.send(result);
     });
 
+    //most liked
+    app.get("/most-liked", async (req, res) => {
+      const result = await artsCollection
+        .find()
+        .sort({ likes: "desc" })
+        .limit(4)
+        .toArray();
+      res.send(result);
+    });
+
     //my-galleries
     app.get("/my-galleries", async (req, res) => {
       const email = req.query.email;
@@ -140,9 +118,17 @@ async function run() {
     });
     //public artworks
     app.get("/public-artworks", async (req, res) => {
-      const result = await artsCollection
-        .find({ visibility: "public" })
-        .toArray();
+      const categoryQuery = req.query.category;
+      // const result = await artsCollection
+      //   .find({ visibility: "public" })
+      //   .toArray();
+      let query = { visibility: "public" };
+
+      if (categoryQuery && categoryQuery !== "All") {
+        query.category = { $regex: categoryQuery, $options: "i" };
+      }
+
+      const result = await artsCollection.find(query).toArray();
       res.send(result);
     });
 
@@ -178,6 +164,18 @@ async function run() {
         .find({ title: { $regex: search_text, $options: "i" } })
         .toArray();
       res.send(result);
+    });
+
+    //likes
+    // likes - increment only
+    app.patch("/artworks/:id/like", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const update = { $inc: { likes: 1 } };
+
+      const result = await artsCollection.updateOne(filter, update);
+      const updatedArt = await artsCollection.findOne(filter);
+      res.send({ success: true, updatedArt });
     });
 
     await client.db("admin").command({ ping: 1 });
