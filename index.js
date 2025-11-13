@@ -6,6 +6,8 @@ const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 app.get("/", (req, res) => {
   res.send("Hello world");
 });
+require("dotenv").config();
+// console.log(process.env);
 
 //middleware
 app.use(cors());
@@ -14,8 +16,9 @@ app.use(express.json());
 //simpleArtworks
 //cqBWotPooDyKcBTx
 
-const uri =
-  "mongodb+srv://simpleArtworks:cqBWotPooDyKcBTx@flash0.nw85ito.mongodb.net/?appName=Flash0";
+// const uri =
+//   "mongodb+srv://simpleArtworks:cqBWotPooDyKcBTx@flash0.nw85ito.mongodb.net/?appName=Flash0";
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@flash0.nw85ito.mongodb.net/?appName=Flash0`;
 
 const client = new MongoClient(uri, {
   serverApi: {
@@ -105,6 +108,15 @@ async function run() {
         .find()
         .sort({ likes: "desc" })
         .limit(4)
+        .toArray();
+      res.send(result);
+    });
+
+    app.get("/banner", async (req, res) => {
+      const result = await artsCollection
+        .find()
+        .sort({ dimensions: "desc" })
+        .limit(3)
         .toArray();
       res.send(result);
     });
