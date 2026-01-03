@@ -129,18 +129,41 @@ async function run() {
       res.send(result);
     });
     //public artworks
-    app.get("/public-artworks", async (req, res) => {
-      const categoryQuery = req.query.category;
-      // const result = await artsCollection
-      //   .find({ visibility: "public" })
-      //   .toArray();
-      let query = { visibility: "public" };
+    // app.get("/public-artworks", async (req, res) => {
+    //   const categoryQuery = req.query.category;
+    //   // const result = await artsCollection
+    //   //   .find({ visibility: "public" })
+    //   //   .toArray();
+    //   let query = { visibility: "public" };
 
-      if (categoryQuery && categoryQuery !== "All") {
-        query.category = { $regex: categoryQuery, $options: "i" };
+    //   if (categoryQuery && categoryQuery !== "All") {
+    //     query.category = { $regex: categoryQuery, $options: "i" };
+    //   }
+
+    //   const result = await artsCollection.find(query).toArray();
+    //   res.send(result);
+    // });
+
+    app.get("/public-artworks", async (req, res) => {
+      const { category, sort } = req.query;
+
+      let query = { visibility: "public" };
+      let sortQuery = {};
+
+      // category filter
+      if (category && category !== "All") {
+        query.category = { $regex: category, $options: "i" };
       }
 
-      const result = await artsCollection.find(query).toArray();
+      // likes sorting
+      if (sort === "likes-desc") {
+        sortQuery.likes = -1; // most → least
+      } else if (sort === "likes-asc") {
+        sortQuery.likes = 1; // least → most
+      }
+
+      const result = await artsCollection.find(query).sort(sortQuery).toArray();
+
       res.send(result);
     });
 
