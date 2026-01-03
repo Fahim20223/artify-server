@@ -17,7 +17,7 @@ app.use(express.json());
 //cqBWotPooDyKcBTx
 
 // const uri =
-//   "mongodb+srv://simpleArtworks:cqBWotPooDyKcBTx@flash0.nw85ito.mongodb.net/?appName=Flash0";
+
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@flash0.nw85ito.mongodb.net/?appName=Flash0`;
 
 const client = new MongoClient(uri, {
